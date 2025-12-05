@@ -22,8 +22,9 @@ class Sheet:
                 sheet_df.insert(insertion_index, column, value = None)
                 insertion_index = sheet_df.columns.get_loc(column)
                 
+            split_syntax = r"\n|,\n|,"
             patterns = {
-                "Name" : r"\n",
+                "Name" : split_syntax,
                 "Pincode" : r"(?i)(?:pincode?|pin\s+)?([1-9]\d{4,5})",
                 "Phone" : r"(?i)(?:mob|phone|ph(?:one)?\s+)?([6-9]\d{9})"
             }
@@ -39,10 +40,18 @@ class Sheet:
                         if pattern_matches and type(pattern_matches) == list:
                             # assign value to the column
                             pattern_match = pattern_matches[0]
-                            print(f"{column_name} : {pattern_matches}")
+                            #print(f"{column_name} : {pattern_match}")
                             sheet_df.loc[idx, column_name] = pattern_match
                             # remove the match from the address cell 
-                            sheet_df.loc[idx, "Address"] =  address.replace(pattern_match, "")
+                            sheet_df.loc[idx, "Address"] = re.sub(pattern_match, "", sheet_df.loc[idx, "Address"])
+                    # split address in to three
+                    address_lines = re.split(
+                        split_syntax,
+                        sheet_df.loc[idx, "Address"]
+                    )
+                    
+                    print(address_lines)
+                    
             # save output
             sheet_df.to_excel(
                 os.path.join(self.excel_path,self.output_filename),
