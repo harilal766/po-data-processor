@@ -30,11 +30,13 @@ class Sheet:
                         "Phone" : r"[6-9]\d{9}"
                     }
                     for column_name, pattern_syntax in patterns.items():
-                        pattern_match = re.findall(pattern_syntax, address)
-                        if pattern_match:
+                        pattern_matches = re.findall(pattern_syntax, address)
+                        if pattern_matches:
                             # assign value to the column
-                            sheet_df.loc[idx, column_name] = pattern_match[0]
+                            pattern_match = pattern_matches[0]
+                            sheet_df.loc[idx, column_name] = pattern_match
                             # remove the match from the address cell 
+                            sheet_df.loc[idx, "Address"] =  re.sub(pattern_match,"",address)
             # save output
             sheet_df.to_excel(
                 os.path.join(self.excel_path,self.output_filename),
