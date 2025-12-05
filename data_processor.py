@@ -17,26 +17,24 @@ class Sheet:
             # insert pincode column
             insertion_index = sheet_df.columns.get_loc('Products')
             # insert 3 address columns
-            additional_columns = ["Pincode", "Phone", "Address 1", "Address 2", "Address 3"]
+            additional_columns = ["Name", "City", "Pincode", "Phone", "Address 1", "Address 2", "Address 3"]
             for column in additional_columns[::-1]:
                 sheet_df.insert(insertion_index, column, value = None)
                 insertion_index = sheet_df.columns.get_loc(column)
-            
-            for address in sheet_df['Address']:
+                
+            for idx, row in sheet_df.iterrows():
+                address = row["Address"]
                 if type(address) == str:
-                    print(address)
-                    # pincode 
-                    pincode_pattern = r"[1-9][0-9]{5}"
-                    pincode_match = re.findall(pincode_pattern, address)
-                    # phone number
-                    phone_pattern = r"[6-9]\d{9}"
-                    phone_number_match = re.findall(phone_pattern,address)
-                    
-                    if pincode_match and phone_number_match:
-                        print(pincode_match,phone_number_match)
-                print("-"*20)
-            print(sheet_df)
-            
+                    patterns = {
+                        "Pincode" : r"[1-9][0-9]{5}",
+                        "Phone" : r"[6-9]\d{9}"
+                    }
+                    for column_name, pattern_syntax in patterns.items():
+                        pattern_match = re.findall(pattern_syntax, address)
+                        if pattern_match:
+                            # assign value to the column
+                            sheet_df.loc[idx, column_name] = pattern_match[0]
+                            # remove the match from the address cell 
             # save output
             sheet_df.to_excel(
                 os.path.join(self.excel_path,self.output_filename),
