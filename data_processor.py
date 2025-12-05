@@ -22,21 +22,27 @@ class Sheet:
                 sheet_df.insert(insertion_index, column, value = None)
                 insertion_index = sheet_df.columns.get_loc(column)
                 
+            patterns = {
+                "Name" : r"\n",
+                "Pincode" : r"(?i)(?:pincode?|pin\s+)?([1-9]\d{4,5})",
+                "Phone" : r"(?i)(?:mob|phone|ph(?:one)?\s+)?([6-9]\d{9})"
+            }
             for idx, row in sheet_df.iterrows():
                 address = row["Address"]
                 if type(address) == str:
-                    patterns = {
-                        "Pincode" : r"[1-9][0-9]{5}",
-                        "Phone" : r"[6-9]\d{9}"
-                    }
                     for column_name, pattern_syntax in patterns.items():
-                        pattern_matches = re.findall(pattern_syntax, address)
-                        if pattern_matches:
+                        if column_name != "Name":
+                            pattern_matches = re.findall(pattern_syntax, address,re.IGNORECASE)
+                        else:
+                            pattern_matches = re.split(pattern_syntax, address,re.IGNORECASE)
+                        
+                        if pattern_matches and type(pattern_matches) == list:
                             # assign value to the column
                             pattern_match = pattern_matches[0]
+                            print(f"{column_name} : {pattern_matches}")
                             sheet_df.loc[idx, column_name] = pattern_match
                             # remove the match from the address cell 
-                            sheet_df.loc[idx, "Address"] =  re.sub(pattern_match,"",address)
+                            sheet_df.loc[idx, "Address"] =  address.replace(pattern_match, "")
             # save output
             sheet_df.to_excel(
                 os.path.join(self.excel_path,self.output_filename),
