@@ -2,12 +2,12 @@ import pandas as pd
 import re,os
 
 class Sheet:
-    def __init__(self, excel_path,input,output):
+    def __init__(self, excel_path : str, input : str, output : str):
         self.excel_path = excel_path
-        self.input_filename = input,
+        self.input_filename = input
         self.output_filename = output
     
-    def process_row(self):
+    def process_sheets(self):
         try:
             # Read the excel file and create the df
             sheet_df = pd.read_excel(
@@ -15,14 +15,12 @@ class Sheet:
                 sheet_name='All'    
             )
             # insert pincode column
-            address_column_index = sheet_df.columns.get_loc('Address')
-            sheet_df.insert(address_column_index,'Pincode', value=None)
-            
-            # insert phone number column
-            sheet_df.insert(address_column_index,'Phone',value=None)
-            
+            insertion_index = sheet_df.columns.get_loc('Products')
             # insert 3 address columns
-            
+            additional_columns = ["Pincode", "Phone", "Address 1", "Address 2", "Address 3"]
+            for column in additional_columns[::-1]:
+                sheet_df.insert(insertion_index, column, value = None)
+                insertion_index = sheet_df.columns.get_loc(column)
             
             for address in sheet_df['Address']:
                 if type(address) == str:
@@ -41,7 +39,7 @@ class Sheet:
             
             # save output
             sheet_df.to_excel(
-                f"{self.excel_path}/{self.output_filename}",
+                os.path.join(self.excel_path,self.output_filename),
                 index='False'             
             )
         except Exception as e:
@@ -53,7 +51,7 @@ sheet_inst = Sheet(
     input='Direct parcel.xlsx',
     output='out.xlsx'
 )
-sheet_inst.process_row()
+sheet_inst.process_sheets()
 
 
 
