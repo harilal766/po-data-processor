@@ -18,7 +18,7 @@ class Sheet:
             insertion_index = sheet_df.columns.get_loc('Products')
             # insert 3 address columns
             additional_columns = [
-                "Name", "City", "Pincode", "Phone", "Address 1", "Address 2", "Address 3"
+                "Barcode", "Name", "City", "Pincode", "Phone", "Address 1", "Address 2", "Address 3"
             ]
             for column in additional_columns[::-1]:
                 sheet_df.insert(insertion_index, column, value = None)
@@ -51,13 +51,20 @@ class Sheet:
                         split_syntax,sheet_df.loc[idx, "Address"]
                     )
                     
-                    cleared_address = []
+                    leftover_address = []
                     for line in address_lines:
-                        if line != "":
-                            cleared_address.append(line)
+                        if line not in ("", " ",","):
+                            leftover_address.append(line)
                     
-                    print(cleared_address)
-                    
+                    leftover_address_length = len(leftover_address)
+                    dividing = int(leftover_address_length/3)
+                    index_count = 0
+                    address_redistribution_columns = additional_columns[-3::]
+                    for col in address_redistribution_columns:
+                        starting = index_count
+                        index_count += dividing
+                        sheet_df.loc[idx,col] = ','.join(leftover_address[starting:index_count])
+                        print(f'{index_count} - {leftover_address[starting:index_count]}')
             # save output
             sheet_df.to_excel(
                 os.path.join(self.excel_path,self.output_filename),
