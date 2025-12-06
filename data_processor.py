@@ -12,12 +12,14 @@ class Sheet:
             # Read the excel file and create the df
             sheet_df = pd.read_excel(
                 os.path.join(self.excel_path, self.input_filename), 
-                sheet_name='All'    
+                sheet_name='PO Data'    
             )
             # insert pincode column
             insertion_index = sheet_df.columns.get_loc('Products')
             # insert 3 address columns
-            additional_columns = ["Name", "City", "Pincode", "Phone", "Address 1", "Address 2", "Address 3"]
+            additional_columns = [
+                "Name", "City", "Pincode", "Phone", "Address 1", "Address 2", "Address 3"
+            ]
             for column in additional_columns[::-1]:
                 sheet_df.insert(insertion_index, column, value = None)
                 insertion_index = sheet_df.columns.get_loc(column)
@@ -46,23 +48,27 @@ class Sheet:
                             sheet_df.loc[idx, "Address"] = re.sub(pattern_match, "", sheet_df.loc[idx, "Address"])
                     # split address in to three
                     address_lines = re.split(
-                        split_syntax,
-                        sheet_df.loc[idx, "Address"]
+                        split_syntax,sheet_df.loc[idx, "Address"]
                     )
                     
-                    print(address_lines)
+                    cleared_address = []
+                    for line in address_lines:
+                        if line != "":
+                            cleared_address.append(line)
+                    
+                    print(cleared_address)
                     
             # save output
             sheet_df.to_excel(
                 os.path.join(self.excel_path,self.output_filename),
-                index='False'             
+                index=False         
             )
         except Exception as e:
             print(e)
 
 
 sheet_inst = Sheet(
-    excel_path='/home/hari/Desktop/Postal Direct',
+    excel_path='C:/Users/USER/Documents/Direct Parcel/',
     input='Direct parcel.xlsx',
     output='out.xlsx'
 )
