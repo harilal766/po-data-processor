@@ -27,8 +27,8 @@ class Sheet:
             split_syntax = r"\n|,\n|,"
             patterns = {
                 "Name" : split_syntax,
-                "Pincode" : r"(?i)(?:pincode?|pin\s+)?([1-9]\d{4,5})",
-                "Phone" : r"(?i)(?:mob|phone|ph(?:one)?\s+)?([6-9]\d{9})"
+                "Pincode" : r"([1-9]\d{4,5}|[1-9]\d{2}\s+\d{3}){1}",
+                "Phone" : r"([6-9]\d{9}|[6-9]\d{4} \d{5})"
             }
             for idx, row in sheet_df.iterrows():
                 address = row["Address"]
@@ -36,12 +36,14 @@ class Sheet:
                     for column_name, pattern_syntax in patterns.items():
                         if column_name != "Name":
                             pattern_matches = re.findall(pattern_syntax, address,re.IGNORECASE)
+                            pattern_match = re.sub(r"\s", "", pattern_matches[0])
                         else:
                             pattern_matches = re.split(pattern_syntax, address,re.IGNORECASE)
+                            pattern_match = pattern_matches[0]
                         
                         if pattern_matches and type(pattern_matches) == list:
                             # assign value to the column
-                            pattern_match = pattern_matches[0]
+                            
                             #print(f"{column_name} : {pattern_match}")
                             sheet_df.loc[idx, column_name] = pattern_match
                             # remove the match from the address cell 
@@ -64,8 +66,8 @@ class Sheet:
                         starting = index_count
                         index_count += dividing
                         sheet_df.loc[idx,col] = ','.join(leftover_address[starting:index_count])
-                        print(f'{index_count} - {leftover_address[starting:index_count]}')
             # save output
+            print(sheet_df[["Address", "Pincode","Phone"]])
             sheet_df.to_excel(
                 os.path.join(self.excel_path,self.output_filename),
                 index=False         
@@ -75,7 +77,7 @@ class Sheet:
 
 
 sheet_inst = Sheet(
-    excel_path='C:/Users/USER/Documents/Direct Parcel/',
+    excel_path='/home/hari/Desktop/Postal Direct',
     input='Direct parcel.xlsx',
     output='out.xlsx'
 )
