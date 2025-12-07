@@ -47,7 +47,12 @@ class Sheet:
                             #print(f"{column_name} : {pattern_match}")
                             sheet_df.loc[idx, column_name] = pattern_match
                             # remove the match from the address cell 
-                            sheet_df.loc[idx, "Address"] = re.sub(pattern_match, "", sheet_df.loc[idx, "Address"])
+                            things_to_remove = (pattern_match, r"Pin|PIN|pin|Mob|MOB|mob|Phone|phone|/.+|/,")
+                            for thing in things_to_remove:
+                                sheet_df.loc[idx, "Address"] = re.sub(
+                                    thing, "", sheet_df.loc[idx, "Address"],re.IGNORECASE
+                                )
+                            
                     # split address in to three
                     address_lines = re.split(
                         split_syntax,sheet_df.loc[idx, "Address"]
