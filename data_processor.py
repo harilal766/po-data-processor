@@ -21,8 +21,9 @@ class Sheet:
                 "Barcode", "Name", "City", "Pincode", "Phone", "Address 1", "Address 2", "Address 3"
             ]
             for column in additional_columns[::-1]:
-                sheet_df.insert(insertion_index, column, value = None)
-                insertion_index = sheet_df.columns.get_loc(column)
+                if not column in sheet_df.columns:
+                    sheet_df.insert(insertion_index, column, value = None)
+                    insertion_index = sheet_df.columns.get_loc(column)
                 
             split_syntax = r"\n|,\n|,"
             patterns = {
@@ -36,7 +37,8 @@ class Sheet:
                     for column_name, pattern_syntax in patterns.items():
                         if column_name != "Name":
                             pattern_matches = re.findall(pattern_syntax, address,re.IGNORECASE)
-                            pattern_match = re.sub(r"\s", "", pattern_matches[0])
+                            print(pattern_matches)
+                            pattern_match = re.sub(r"\s", "", pattern_matches[0] if len(pattern_matches)>0 else str(pattern_matches))
                         else:
                             pattern_matches = re.split(pattern_syntax, address,re.IGNORECASE)
                             pattern_match = pattern_matches[0]
@@ -47,11 +49,12 @@ class Sheet:
                             #print(f"{column_name} : {pattern_match}")
                             sheet_df.loc[idx, column_name] = pattern_match
                             # remove the match from the address cell 
-                            things_to_remove = (pattern_match, r"Pin|PIN|pin|Mob|MOB|mob|Phone|phone|/.+|/,")
+                            things_to_remove = (pattern_match, r"Pin|PIN|pin|Mob|MOB|mob|Phone|phone|[/.,:]+")
                             for thing in things_to_remove:
                                 sheet_df.loc[idx, "Address"] = re.sub(
                                     thing, "", sheet_df.loc[idx, "Address"],re.IGNORECASE
                                 )
+                                
                             
                     # split address in to three
                     address_lines = re.split(
@@ -72,7 +75,6 @@ class Sheet:
                         index_count += dividing
                         sheet_df.loc[idx,col] = ','.join(leftover_address[starting:index_count])
             # save output
-            print(sheet_df[["Address", "Pincode","Phone"]])
             sheet_df.to_excel(
                 os.path.join(self.excel_path,self.output_filename),
                 index=False         
@@ -82,11 +84,8 @@ class Sheet:
 
 
 sheet_inst = Sheet(
-    excel_path='/home/hari/Desktop/Postal Direct',
+    excel_path=r'C:\Users\USER\Documents\Direct Parcel',
     input='Direct parcel.xlsx',
     output='out.xlsx'
 )
 sheet_inst.process_sheets()
-
-
-
